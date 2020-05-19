@@ -51,12 +51,17 @@ function displayContextMenu(event) {
 	// position context menu 
 	menu.style.top = event.pageY + 'px'
 	menu.style.left = event.pageX + 'px'
-	// insert elements into document
-	getDownloadElement(event).then(res => {
-		menu.appendChild(res)
-		document.body.appendChild(menu)
-		clearLoading(event)
-	})
+	setTimeout(() => {
+		// insert elements into document
+		getDownloadElement(event).then(res => {
+			setTimeout(() => {
+				menu.appendChild(res)
+				document.body.appendChild(menu)
+				clearLoading(event)
+
+			}, 800)
+		})
+	}, 900)
 }
 
 function getDownloadElement(event) {
@@ -64,12 +69,14 @@ function getDownloadElement(event) {
 		event.target, 
 		media_type[event.target.className]
 	) 
+	fetching.innerText = 'Converting media file...'
 	// get downloadable file...
 	return srcToFile(
 		opts.src, 
 		opts.filename, 
 		opts.mimetype
 	).then(file => {
+		fetching.innerText = 'Preparing download link...'
 		// then create download link (anchor tag)
 		let fsize = (file.size / 1e3).toFixed(1)
 		const anchor = new DOMParser().parseFromString(
@@ -115,7 +122,7 @@ function showLoading(event) {
 	event.target.style.cursor = 'progress'
 	fetching = document.createElement('p')
 	fetching.classList.add('fetching')
-	fetching.innerText = 'Fetching media file...'
+	fetching.innerText = 'Accessing url...'
 	document.body.appendChild(fetching)
 }
 
