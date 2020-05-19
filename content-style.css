@@ -16,7 +16,7 @@
 
 	overflow: hidden;
 	z-index: 100;
-	
+
 }
 
 .context-menu > * {
@@ -38,4 +38,29 @@
 	align-items: center;
 	justify-content: space-between;
 	text-decoration: none;
+}
+
+.fetching {
+	position: fixed;
+	top: 54px;
+	left: 0;
+	padding: 6px 9px;
+
+	border-radius: 0 0 4px 0;
+
+	background-color: var(--color);
+	color: #fff;
+	
+	font-size: 12px;
+
+	z-index: 100;
+    user-select: none;
+	animation: loading 3s ease 0s infinite;
+
+}
+
+@keyframes loading {
+	to {
+		filter: hue-rotate(360deg);
+	}
 }

@@ -1,7 +1,8 @@
 const media_type = {
 	_9AhH0: 'image',
-	_5wCQW: 'video'
+	_5wCQW: 'video',
 	fXIG0: 'video', 
+	tWeCl: 'video',
 }
 
 const media_cls = {
@@ -9,30 +10,41 @@ const media_cls = {
 	image: 'FFVAD'
 }
 
+let fetching
+
 document.addEventListener('click', function(event) {
 	// remove context menu if it previously exists...
 	removeContextMenu()
 
 	if (event.ctrlKey) {
 		// then check if click event occured on a media element...
-		if (event.target.className in media_type) {
-			// then create a new menu if it does
-			displayContextMenu(event)
+		path = event.path
+		while (path) {
+			target = path.shift()
+			if (target && target.className in media_type) {
+				// console.log('Still in listener but before assignment', target)
+				event.target = target
+				// console.log('Still in listener', event.target)
+				break
+			}
 		}
+		// then create a new menu if it does
+		displayContextMenu(event)
 	}
 })
 
 document.addEventListener('scroll', removeContextMenu)
+document.addEventListener('keydown', ev => {
+	if (ev.code === 'Escape')  removeContextMenu()
+})
 
-function removeContextMenu() {
-	const prev_menu = document.querySelector('.context-menu')
-	if (prev_menu) {
-		prev_menu.parentNode.removeChild(prev_menu)
-	}
-
+function clearLoading(event) {
+	fetching.parentNode.removeChild(fetching)
+	event.target.style.cursor = 'default'
 }
 
 function displayContextMenu(event) {
+	showLoading(event) 
 	// get media link and create download context menu
 	const menu = document.createElement('div')
 	menu.classList.add('context-menu')
@@ -43,6 +55,7 @@ function displayContextMenu(event) {
 	getDownloadElement(event).then(res => {
 		menu.appendChild(res)
 		document.body.appendChild(menu)
+		clearLoading(event)
 	})
 }
 
@@ -67,7 +80,9 @@ function getDownloadElement(event) {
 				download="${opts.filename}"
 			>
 				Download 
-				<em id="size">${fsize >= 1e3 ? (fsize / 1e3).toFixed(1) + ' MB' : fsize + ' KB'}</em>
+				<em id="size">
+					${fsize >= 1e3 ? (fsize / 1e3).toFixed(1) + ' MB' : fsize + ' KB'}
+				</em>
 			</a>
 			`, 'text/html'
 		).body.firstElementChild
@@ -87,6 +102,21 @@ function getProperties(target_elm, type) {
 	opts.filename += `.${opts.mimetype.split('/').pop()}`
 
 	return opts
+}
+
+function removeContextMenu() {
+	const prev_menu = document.querySelector('.context-menu')
+	if (prev_menu) {
+		prev_menu.parentNode.removeChild(prev_menu)
+	}
+}
+
+function showLoading(event) {
+	event.target.style.cursor = 'progress'
+	fetching = document.createElement('p')
+	fetching.classList.add('fetching')
+	fetching.innerText = 'Fetching media file...'
+	document.body.appendChild(fetching)
 }
 
 function srcToFile(src, fileName, mimeType){
