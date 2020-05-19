@@ -1,6 +1,6 @@
 const media_type = {
 	_9AhH0: 'image',
-	_5wCQW: 'video'
+	_5wCQW: 'video',
 	fXIG0: 'video', 
 }
 
@@ -15,9 +15,17 @@ document.addEventListener('click', function(event) {
 
 	if (event.ctrlKey) {
 		// then check if click event occured on a media element...
-		if (event.target.className in media_type) {
-			// then create a new menu if it does
-			displayContextMenu(event)
+		const path = event.path
+		while (path) {
+			const elm = path.shift()
+			if (elm) {
+				if (elm.className in media_type) {
+					console.log(elm)
+					event.target = elm
+					// then create a new menu if it does
+					displayContextMenu(event)
+				}
+			}
 		}
 	}
 })
@@ -47,8 +55,9 @@ function displayContextMenu(event) {
 }
 
 function getDownloadElement(event) {
+	console.log('target', event.target, 'parent', event.target.parentNode)
 	const opts = getProperties(
-		event.target, 
+		event.target.parentNode, 
 		media_type[event.target.className]
 	) 
 	// get downloadable file...
@@ -78,7 +87,8 @@ function getDownloadElement(event) {
 
 function getProperties(target_elm, type) {
 	const cls = media_cls[type]
-	const elem = target_elm.parentNode.querySelector('.' + cls)
+	const elem = target_elm.querySelector('.' + cls)
+	console.log(elem)
 	let opts = {
 		src: elem.src,
 		filename: elem.src.split('=').pop(), 
