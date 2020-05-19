@@ -18,6 +18,8 @@
 
     font-family: 'Roboto', sans-serif;
     font-size: .75rem;
+
+    user-select: none;
 }
 
 .how-to em {
