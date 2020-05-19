@@ -1,0 +1,40 @@
+{
+  "name": "IG Media Downloader",
+  "description" : "Download photos and videos on instagram at a single click.",
+  "version": "1.0",
+  "manifest_version": 2,
+  "page_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/logo/igdown16.png",
+      "32": "assets/logo/igdown32.png",
+      "48": "assets/logo/igdown48.png",
+      "128": "assets/logo/igdown128.png"
+    }
+  },
+  "icons": {
+      "16": "assets/logo/igdown16.png",
+      "32": "assets/logo/igdown32.png",
+      "48": "assets/logo/igdown48.png",
+      "128": "assets/logo/igdown128.png"
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "content_scripts": [
+   {
+     "matches": [
+      "https://*.instagram.com/*"
+    ],
+     "run_at": "document_idle",
+     "css": ["content-style.css"],
+     "js": ["content-script.js"]
+   }
+ ],
+  "permissions": [
+    "declarativeContent"
+  ]
+} 

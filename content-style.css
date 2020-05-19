@@ -1,0 +1,41 @@
+:root {
+	--color: #e1306c;
+	--bg-color: #fff2f6;
+}
+
+.context-menu {
+	width: 150px;
+	position: absolute;
+	
+	display: flex;
+	flex-direction: column;
+
+	background-color: #fff;
+	border-radius: 4px;
+	border: 2px solid var(--color);
+
+	overflow: hidden;
+	z-index: 100;
+	
+}
+
+.context-menu > * {
+	padding: 6px 9px;
+	
+	font-family: 'Roboto', sans-serif;
+	font-size: 11px;
+	font-weight: 300;
+	
+	color: var(--color);
+}
+
+.context-menu > *:hover {
+	background-color: var(--bg-color);
+}
+
+.context-menu #download {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	text-decoration: none;
+}

@@ -1,0 +1,25 @@
+:root {
+    --color: #e1306c;
+    --color-light: #dbfffc;
+    --min-height: 400px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.how-to {
+    width: 260px;
+    padding: 6px 12px;
+    
+    color: grey;
+
+    font-family: 'Roboto', sans-serif;
+    font-size: .75rem;
+}
+
+.how-to em {
+    color: var(--color)
+}
