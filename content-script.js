@@ -33,7 +33,7 @@ document.addEventListener('click', function(event) {
 	}
 })
 
-document.addEventListener('scroll', removeContextMenu)
+// document.addEventListener('scroll', removeContextMenu)
 document.addEventListener('keydown', ev => {
 	if (ev.code === 'Escape')  removeContextMenu()
 })
@@ -90,6 +90,7 @@ function getDownloadElement(event) {
 				<em id="size">
 					${fsize >= 1e3 ? (fsize / 1e3).toFixed(1) + ' MB' : fsize + ' KB'}
 				</em>
+				<span id="cancel">&times;</span>
 			</a>
 			`, 'text/html'
 		).body.firstElementChild
