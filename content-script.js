@@ -38,6 +38,11 @@ document.addEventListener('keydown', ev => {
 	if (ev.code === 'Escape')  removeContextMenu()
 })
 
+function clearLoading(event) {
+	fetching.parentNode.removeChild(fetching)
+	event.target.style.cursor = 'default'
+}
+
 function displayContextMenu(event) {
 	showLoading(event) 
 	// get media link and create download context menu
@@ -70,14 +75,14 @@ function getDownloadElement(event) {
 		opts.src, 
 		opts.filename, 
 		opts.mimetype
-	).then(blob => {
+	).then(file => {
 		fetching.innerText = 'Preparing download link...'
 		// then create download link (anchor tag)
-		let fsize = (blob.size / 1e3).toFixed(1)
+		let fsize = (file.size / 1e3).toFixed(1)
 		const anchor = new DOMParser().parseFromString(
 			`
 			<a 
-				href="${webkitURL.createObjectURL(blob)}" 
+				href="${webkitURL.createObjectURL(file)}" 
 				id="download" 
 				download="${opts.filename}"
 			>
@@ -85,6 +90,7 @@ function getDownloadElement(event) {
 				<em id="size">
 					${fsize >= 1e3 ? (fsize / 1e3).toFixed(1) + ' MB' : fsize + ' KB'}
 				</em>
+				<span id="cancel">&times;</span>
 			</a>
 			`, 'text/html'
 		).body.firstElementChild
@@ -111,4 +117,21 @@ function removeContextMenu() {
 	if (prev_menu) {
 		prev_menu.parentNode.removeChild(prev_menu)
 	}
+}
+
+function showLoading(event) {
+	event.target.style.cursor = 'progress'
+	fetching = document.createElement('p')
+	fetching.classList.add('fetching')
+	fetching.innerText = 'Accessing url...'
+	document.body.appendChild(fetching)
+}
+
+function srcToFile(src, fileName, mimeType){
+	// convert url to blob / file object
+    return (
+    	fetch(src)
+    	.then( res => { return res.arrayBuffer() } )
+        .then( buf => { return new File([buf], fileName, {type:mimeType}) } )
+    )
 }
