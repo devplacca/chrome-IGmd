@@ -1,7 +1,7 @@
 {
   "name": "IG Media Downloader",
   "description" : "Download photos and videos on instagram at a single click.",
-  "version": "0.0.2",
+  "version": "1.2.0",
   "manifest_version": 2,
   "page_action": {
     "default_popup": "popup.html",
@@ -30,8 +30,14 @@
       "https://*.instagram.com/*"
     ],
      "run_at": "document_idle",
-     "css": ["content-style.css"],
-     "js": ["content-script.js"]
+     "js": [
+        "assets/content/js/content-module.js",
+        "assets/content/js/content-ctrl.js",
+        "assets/content/js/content-popup.js"
+      ],
+     "css": [
+        "assets/content/css/content-style.css"
+     ]
    }
  ],
   "permissions": [
