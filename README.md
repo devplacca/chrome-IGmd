@@ -3,4 +3,4 @@ A chrome extension that allows you to easily download media (photos and video) o
 
 
 ## Availability
-[on Chrome store](https://chrome.google.com/webstore/detail/ig-media-downloader/hfcenolookheknpobmckkgccedgnpoff)
+[Chrome store](https://chrome.google.com/webstore/detail/ig-media-downloader/hfcenolookheknpobmckkgccedgnpoff)
