@@ -1,4 +1,4 @@
-# Instagram Media Downloader ![](https://github.com/devplacca/chrome-IGmd/blob/master/assets/logo/igdown32.png)
+# IG Media Downloader ![](https://github.com/devplacca/chrome-IGmd/blob/master/assets/logo/igdown32.png)
 A chrome extension that allows you to easily download media (photos and video) on Instagram.
 
 
