@@ -46,13 +46,15 @@ function insertDownloadLink({target, path}) {
 function downloadFile(event, path) {
 	showLoading(event) // shows progress banner
 
+	let article
 	for (let parent of path) {
 		if (parent.localName === 'article') {
+			article = parent
 			break
 		}
 	}
 
-	const { url, type, name } = getDownloadProps(parent)
+	const { url, type, name } = getDownloadProps(article)
 
 	srcToFile(url, name, type)
 	.then(blob => {
@@ -63,6 +65,10 @@ function downloadFile(event, path) {
 
 		clearLoading(event) // removes progress banner
 	})
+	.catch(err => alert(
+		'Sorry! An unexpected error occured. ' +
+		'Please check your internet connection and try again'
+	))
 }
 
 function getDownloadProps(elm) {
