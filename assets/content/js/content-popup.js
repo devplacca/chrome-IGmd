@@ -5,7 +5,7 @@ const [trgts, media, divs] = [
 		FFVAD: 'image/jpg',
 		tWeCl: 'video/mp4'
 	},
-	['.KL4Bh', '._5wCQW']
+	['._5wCQW', '.KL4Bh']
 ]
 
 let postPath;
@@ -114,10 +114,10 @@ async function downloadFile(event) {
 		downloadLink.href = webkitURL.createObjectURL(blob);
 		downloadLink.click();
 	})
-	.catch(err => alert(
-		'Sorry! An unexpected error occured. ' +
-		'Please check your internet connection and try again'
-	))
+	.catch(err => {
+		console.log(err);
+		alert('Sorry! An unexpected error occured. This is probably a problem with Instagram')
+	})
 	.finally(() => clearLoading(indicator, event))
 }
 
@@ -153,23 +153,40 @@ function getPropsFromArticle () {
 	// let article
 	for (let parent of postPath) {
 		if (parent.localName === 'article') {
-			// article = parent
+			let url, mimeType;
+			const username = parent.innerText.split('\n').shift();
+			// check if article contains a list of posts and
+			// get the properties from the right list item
+			if (parent.querySelector('li.Ckrof')) {
+				parent = getParentFromMultiple(parent);
+			}
 			for (let cls of divs) {
-				media_div = parent.querySelector(cls);
-				mediaElm = media_div ? media_div.firstElementChild : null;
-
+				mediaContainer = parent.querySelector(cls);
+				mediaElm = mediaContainer?.firstElementChild;
 				if (mediaElm) {
-					const url = mediaElm.src;
-					const mimeType = media[mediaElm.className];
-					const filename = createFileName(
-						url,
-						mimeType,
-						parent.innerText.split('\n').shift(), // username
-					);
-					console.log({url, mimeType, filename});
-					return { url, mimeType, filename };
+					url = mediaElm.src;
+					mimeType = media[mediaElm.className];
+					break
 				}
 			}
+			const filename = createFileName(
+				url,
+				mimeType,
+				username
+			);
+			console.log({url, mimeType, filename});
+			return { url, mimeType, filename };
+		}
+	}
+}
+
+function getParentFromMultiple (ancestor) {
+	const container = ancestor.querySelector('div.ekfSF');
+	const {x: containerX} = container.getBoundingClientRect();
+	for (post of ancestor.querySelector('ul.vi798').children) {
+		const {x: postX} = post.getBoundingClientRect();
+		if (containerX === postX) {
+			return post
 		}
 	}
 }
