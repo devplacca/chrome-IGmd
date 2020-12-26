@@ -10,6 +10,7 @@ const [trgts, media, divs] = [
 
 let postPath;
 let popupMenu;
+let postType;
 let buttonInserted = false
 const observerOptions = {
   childList: true,
@@ -20,37 +21,48 @@ const observerOptions = {
 	save event on every click. This helps grab the necessary
 	information we need to create the download link
 */
-document.addEventListener('click', event => {
-	postPath = event.path
+document.addEventListener('click', ({target, path}) => {
+	const {classList} = target;
+	if (['_8-yf5', 'Igw0E'].some(cn => classList.contains(cn))) {
+		postPath = path;
+		postType = 'article';
+	} else if (classList.contains('u-__7')) {
+		postType = 'story';
+	} else {
+		return
+	}
 })
 
 // this is custom event listener
 document.addEventListener('popupmenu', () => {
-	// temporarily stop monitoring changes in order to avoid getting stuck
-	// in an infinite loop when we attempt to insert the download button
+	/*
+		temporarily stop monitoring changes in order to avoid getting stuck
+		in an infinite loop when an attempt is made to insert the download button
+	*/
 	observer.disconnect();
 	if (!buttonInserted) {
 		insertDownloadButton(popupMenu);
 	}
 })
 
-// monitor changes/mutations in body element
-// the purpose of monitoring to find out if the popup menu is in view or not
+/*
+	monitor changes/mutations in body element
+	the purpose of monitoring to find out if the popup menu is in view or not
+*/
 const observer = new MutationObserver(mutations => {
 	for (mutation of mutations) {
 		// perform this check in order to avoid inserting the download button multiple times
-		const {previousSibling: sibling} = mutation;
-		// console.log(sibling)
-		if (sibling?.classList && !sibling.classList.contains('RnEpo')) {
-			popupMenu = document.body.querySelector('.mt3GC');
-			if (popupMenu) {
+		const addedNode = (mutation.addedNodes || {})[0];
+		if (addedNode && addedNode.classList?.contains('RnEpo')) {
+			popupMenu = addedNode.querySelector('.mt3GC');
+			if (popupMenu) { // popup menu is in view
 				buttonInserted = false;
-				const customEvent = new Event('popupmenu', {
+				const popupEvent = new Event('popupmenu', {
 					bubbles: false,
 					cancelable: true
 				})
-				document.dispatchEvent(customEvent)
-				break
+				document.dispatchEvent(popupEvent);
+				return;
 			}
 		}
 	}
@@ -73,95 +85,91 @@ function insertDownloadButton(menu) {
 }
 
 
-function downloadFile(event) {
+async function downloadFile(event) {
 	// const { parentNode } = event.currentTarget;
 	// parentNode.parentNode.removeChild(parentNode); // close popup menu
 
-	const loading = showLoading(event) // shows progress banner
-
-	let article
-	for (let parent of postPath) {
-		if (parent.localName === 'article') {
-			article = parent
-			break
-		}
-	}
-
-	const props = getDownloadProps(article);
+	const indicator = showLoading(event); // shows progress banner
+	const props = getDownloadProps();
+	/*
+	const [type, ext] = props.mimeType.split('/');
+	const fileHandle = await window.showSaveFilePicker({
+		excludeAcceptAllOption: true,
+		types: [{
+			description: `Media, ${type.toTitleCase()}`,
+			accept: {
+				[props.mimeType]: ['.' + ext]
+			}
+		}],
+	})
+	console.log(fileHandle)
+	return
+	*/
 
 	srcToFile(props.url)
 	.then(blob => {
-		// window['ig-down-fetching'].innerText = 'Downloading...';
-		loading.innerText = 'Downloading'
-		const downloadLink = createElementFromString(`
-			<a
-				href="${webkitURL.createObjectURL(blob)}"
-				download="${props.filename}"
-			></a>
-		`)
-		// const anchor = document.createElement('a');
-		// anchor.download = props.name;
-		// anchor.href = webkitURL.createObjectURL(blob);
-		// anchor.click();
+		indicator.innerText = 'Downloading...';
+		const downloadLink = document.createElement('a');
+		downloadLink.download = props.filename;
+		downloadLink.href = webkitURL.createObjectURL(blob);
 		downloadLink.click();
-
-		clearLoading(event) // removes progress banner
 	})
 	.catch(err => alert(
 		'Sorry! An unexpected error occured. ' +
 		'Please check your internet connection and try again'
 	))
-	.finally(() => loading.parentNode.removeChild(loading))
+	.finally(() => clearLoading(indicator, event))
 }
 
-function getDownloadProps(postArticleElm) {
-	if (!postArticleElm) {
-		return getPropsFromStory()
-	} else {
-		return getPropsFromArticle(postArticleElm)
+function getDownloadProps() {
+	switch (postType) {
+		case 'article':
+			return getPropsFromArticle()
+		case 'story':
+			return getPropsFromStory()
 	}
 }
 
 function getPropsFromStory () {
 	const storyWrapper = window['react-root'].querySelector('section.szopg');
 	const mediaWrapper = storyWrapper.querySelector('.qbCDp');
-	let type;
+	let mimeType;
 	// first assume the media is a video and grab that...
 	let url = (mediaWrapper.querySelector('video.y-yJ5')?.firstElementChild || {})?.src;
 	if (!url) {
 		// if assumption fails, the media is a definitely an image.
 		url = mediaWrapper.querySelector('img.y-yJ5').src;
-		type = 'image/jpg';
+		mimeType = 'image/jpg';
 	} else {
-		type = 'video/mp4';
+		mimeType = 'video/mp4';
 	}
-	const header = storyWrapper.querySelector('header.C1rPk');
-	const username = header.querySelector('div.Rkqev').textContent;
-	const filename = createFileName(url, mimeType, username)
+	const username = storyWrapper.querySelector('div.Rkqev').textContent;
+	const filename = createFileName(url, mimeType, username);
 	console.log({url, username, mimeType, filename});
 	return {url, mimeType, filename};
 }
 
-function getPropsFromArticle (article) {
-	for (let cls of divs) {
-		media_div = article.querySelector(cls)
-		mediaElm = media_div ? media_div.firstElementChild : null
+function getPropsFromArticle () {
+	// let article
+	for (let parent of postPath) {
+		if (parent.localName === 'article') {
+			// article = parent
+			for (let cls of divs) {
+				media_div = parent.querySelector(cls);
+				mediaElm = media_div ? media_div.firstElementChild : null;
 
-		if (mediaElm) {
-			const url = mediaElm.src;
-			const mimeType = media[mediaElm.className];
-			const filename = createFileName(
-				url,
-				mimeType,
-				article.innerText.split('\n').shift(), // username
-			);
-			return { url, mimeType, filename };
+				if (mediaElm) {
+					const url = mediaElm.src;
+					const mimeType = media[mediaElm.className];
+					const filename = createFileName(
+						url,
+						mimeType,
+						parent.innerText.split('\n').shift(), // username
+					);
+					console.log({url, mimeType, filename});
+					return { url, mimeType, filename };
+				}
+			}
 		}
 	}
-};
-
-function createFileName(url, mimeType, ...others) {
-	url = url.split('=').pop().split('%').shift();
-	mimeType = mimeType.split('/').pop();
-	return `${others.join('&')}-${url}.${mimeType}`;
 }
