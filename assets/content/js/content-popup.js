@@ -8,60 +8,102 @@ const [trgts, media, divs] = [
 	['.KL4Bh', '._5wCQW']
 ]
 
-document.addEventListener(
-	'click',
-	// add a delay to ensure that the popup menu is ready before inserting button
-	// might take a few retries to work
-	// TODO: make insertion seamless and instant
-	ev => setTimeout(() => insertDownloadLink(ev), 30)
-)
+let postPath;
+let popupMenu;
+let buttonInserted = false
+const observerOptions = {
+  childList: true,
+  subtree: true
+}
 
-function insertDownloadLink({target, path}) {
-	const { className } = target
+/*
+	save event on every click. This helps grab the necessary
+	information we need to create the download link
+*/
+document.addEventListener('click', event => {
+	postPath = event.path
+})
 
-	if (trgts.includes(className.baseVal || className)) {
-		const [popup, download_btn] = [
-			document.querySelector('.mt3GC'),
-			// create download button for popup menu
-			new DOMParser().parseFromString(
-				`<button
-					id="pop-download-opt"
-					class="aOOlW   HoLwm "
-					tabindex="0"
-				>Download</button>`,
-				'text/html'
-			).body.firstElementChild
-		]
-		// add button to popup menu
-		popup.insertBefore(
-			download_btn,
-			popup.lastElementChild
-		)
-
-		download_btn.onclick = e => downloadFile(e, path)
+// this is custom event listener
+document.addEventListener('popupmenu', () => {
+	// temporarily stop monitoring changes in order to avoid getting stuck
+	// in an infinite loop when we attempt to insert the download button
+	observer.disconnect();
+	if (!buttonInserted) {
+		insertDownloadButton(popupMenu);
 	}
+})
+
+// monitor changes/mutations in body element
+// the purpose of monitoring to find out if the popup menu is in view or not
+const observer = new MutationObserver(mutations => {
+	for (mutation of mutations) {
+		// perform this check in order to avoid inserting the download button multiple times
+		const {previousSibling: sibling} = mutation;
+		// console.log(sibling)
+		if (sibling?.classList && !sibling.classList.contains('RnEpo')) {
+			popupMenu = document.body.querySelector('.mt3GC');
+			if (popupMenu) {
+				buttonInserted = false;
+				const customEvent = new Event('popupmenu', {
+					bubbles: false,
+					cancelable: true
+				})
+				document.dispatchEvent(customEvent)
+				break
+			}
+		}
+	}
+});
+
+observer.observe(document.body, observerOptions);
+
+
+function insertDownloadButton(menu) {
+	const downloadBtn = createElementFromString(`
+		<button class="aOOlW   HoLwm " tabindex="0">
+			Download
+		</button>
+	`);
+	downloadBtn.onclick = event => downloadFile(event);
+	// add button to popup menu
+	menu.insertBefore(downloadBtn, menu.lastElementChild)
+	buttonInserted = true;
+	observer.observe(document.body, observerOptions); // resume monitoring
 }
 
 
-function downloadFile(event, path) {
-	showLoading(event) // shows progress banner
+function downloadFile(event) {
+	// const { parentNode } = event.currentTarget;
+	// parentNode.parentNode.removeChild(parentNode); // close popup menu
+
+	const loading = showLoading(event) // shows progress banner
 
 	let article
-	for (let parent of path) {
+	for (let parent of postPath) {
 		if (parent.localName === 'article') {
 			article = parent
 			break
 		}
 	}
 
-	const { url, type, name } = getDownloadProps(article)
+	const props = getDownloadProps(article);
 
-	srcToFile(url, name, type)
+	srcToFile(props.url)
 	.then(blob => {
-		const anchor = document.createElement('a')
-		anchor.download = name
-		anchor.href = webkitURL.createObjectURL(blob)
-		anchor.click()
+		// window['ig-down-fetching'].innerText = 'Downloading...';
+		loading.innerText = 'Downloading'
+		const downloadLink = createElementFromString(`
+			<a
+				href="${webkitURL.createObjectURL(blob)}"
+				download="${props.filename}"
+			></a>
+		`)
+		// const anchor = document.createElement('a');
+		// anchor.download = props.name;
+		// anchor.href = webkitURL.createObjectURL(blob);
+		// anchor.click();
+		downloadLink.click();
 
 		clearLoading(event) // removes progress banner
 	})
@@ -69,28 +111,57 @@ function downloadFile(event, path) {
 		'Sorry! An unexpected error occured. ' +
 		'Please check your internet connection and try again'
 	))
+	.finally(() => loading.parentNode.removeChild(loading))
 }
 
-function getDownloadProps(elm) {
-	let url, type, name
+function getDownloadProps(postArticleElm) {
+	if (!postArticleElm) {
+		return getPropsFromStory()
+	} else {
+		return getPropsFromArticle(postArticleElm)
+	}
+}
 
+function getPropsFromStory () {
+	const storyWrapper = window['react-root'].querySelector('section.szopg');
+	const mediaWrapper = storyWrapper.querySelector('.qbCDp');
+	let type;
+	// first assume the media is a video and grab that...
+	let url = (mediaWrapper.querySelector('video.y-yJ5')?.firstElementChild || {})?.src;
+	if (!url) {
+		// if assumption fails, the media is a definitely an image.
+		url = mediaWrapper.querySelector('img.y-yJ5').src;
+		type = 'image/jpg';
+	} else {
+		type = 'video/mp4';
+	}
+	const header = storyWrapper.querySelector('header.C1rPk');
+	const username = header.querySelector('div.Rkqev').textContent;
+	const filename = createFileName(url, mimeType, username)
+	console.log({url, username, mimeType, filename});
+	return {url, mimeType, filename};
+}
+
+function getPropsFromArticle (article) {
 	for (let cls of divs) {
-		media_div = elm.querySelector(cls)
-		media_elm = media_div ? media_div.firstElementChild : null
+		media_div = article.querySelector(cls)
+		mediaElm = media_div ? media_div.firstElementChild : null
 
-		if (media_elm) {
-			url = media_elm.src
-			type = media[media_elm.className]
-			name = `${
-				// gets account name from which the media file is being retrieved
-				elm.innerText.split('\n').shift()
-			}-${
-				url.split('=').pop()
-			}.${
-				type.split('/').pop()
-			}`
-
-			return { url, type, name }
+		if (mediaElm) {
+			const url = mediaElm.src;
+			const mimeType = media[mediaElm.className];
+			const filename = createFileName(
+				url,
+				mimeType,
+				article.innerText.split('\n').shift(), // username
+			);
+			return { url, mimeType, filename };
 		}
 	}
+};
+
+function createFileName(url, mimeType, ...others) {
+	url = url.split('=').pop().split('%').shift();
+	mimeType = mimeType.split('/').pop();
+	return `${others.join('&')}-${url}.${mimeType}`;
 }
