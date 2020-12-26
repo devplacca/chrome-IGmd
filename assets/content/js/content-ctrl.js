@@ -1,12 +1,12 @@
 const media_type = {
 	_9AhH0: 'image',
 	_5wCQW: 'video',
-	fXIG0: 'video', 
+	fXIG0: 'video',
 	tWeCl: 'video',
 }
 
 const media_cls = {
-	video: 'tWeCl', 
+	video: 'tWeCl',
 	image: 'FFVAD'
 }
 
@@ -44,11 +44,11 @@ function clearLoading(event) {
 }
 
 function displayContextMenu(event) {
-	showLoading(event) 
+	showLoading(event)
 	// get media link and create download context menu
 	const menu = document.createElement('div')
 	menu.classList.add('context-menu')
-	// position context menu 
+	// position context menu
 	menu.style.top = event.pageY + 'px'
 	menu.style.left = event.pageX + 'px'
 	setTimeout(() => {
@@ -66,35 +66,33 @@ function displayContextMenu(event) {
 
 function getDownloadElement(event) {
 	const opts = getProperties(
-		event.target, 
+		event.target,
 		media_type[event.target.className]
-	) 
+	)
 	fetching.innerText = 'Converting media file...'
 	// get downloadable file...
 	return srcToFile(
-		opts.src, 
-		opts.filename, 
+		opts.src,
+		opts.filename,
 		opts.mimetype
 	).then(file => {
 		fetching.innerText = 'Preparing download link...'
 		// then create download link (anchor tag)
 		let fsize = (file.size / 1e3).toFixed(1)
-		const anchor = new DOMParser().parseFromString(
-			`
-			<a 
-				href="${webkitURL.createObjectURL(file)}" 
-				id="download" 
+		const anchor = createElementFromString(`
+			<a
+				href="${webkitURL.createObjectURL(file)}"
+				id="download"
 				download="${opts.filename}"
 			>
-				Download 
+				Download
 				<em id="size">
 					${fsize >= 1e3 ? (fsize / 1e3).toFixed(1) + ' MB' : fsize + ' KB'}
 				</em>
 				<span id="cancel">&times;</span>
 			</a>
-			`, 'text/html'
-		).body.firstElementChild
-		
+		`)
+
 		return anchor
 	})
 }
@@ -104,7 +102,7 @@ function getProperties(target_elm, type) {
 	const elem = target_elm.parentNode.querySelector('.' + cls)
 	let opts = {
 		src: elem.src,
-		filename: elem.src.split('=').pop(), 
+		filename: elem.src.split('=').pop(),
 		mimetype: type === 'image' ? 'image/jpeg' : elem.getAttribute('type')
 	}
 	opts.filename += `.${opts.mimetype.split('/').pop()}`
