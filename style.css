@@ -15,13 +15,12 @@ header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: .25rem 0;
-    /*border-bottom: 1px solid #d2d2d2;*/
+    padding: .3rem 0;
     background-color: #f0f0f0;
 }
 
 header > * {
-    margin: .25rem 0;
+    margin: .3rem 0;
 }
 
 ul.steps {
@@ -68,12 +67,33 @@ li.step .counter {
 footer {
     padding: .5rem;
     display: flex;
-    flex-direction: center;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     border-top: 1px solid #ebebeb;
 }
 
+footer > *:not(:last-child) {
+    margin-bottom: .2rem;
+}
+
+footer a {
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline dashed;
+}
+
+footer .support {
+    display: flex;
+}
+
+footer .support > * {
+    margin: 0 .35rem;
+}
+
 footer .version {
     text-align: center;
+    /*margin: .35rem;*/
 }
