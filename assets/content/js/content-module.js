@@ -1,6 +1,12 @@
 function srcToFile(src){
 	// convert url to blob / file object
-    return fetch(src).then(res => {return res.blob()})
+   return fetch(src)
+   	.then(res => {
+   		return res.blob()
+   	})
+   	.catch(err => {
+   		throw err
+   	})
 }
 
 function showLoading(event) {
