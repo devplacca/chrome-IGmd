@@ -22,10 +22,6 @@ const observerOptions = {
   subtree: true
 }
 
-document.addEventListener('securitypolicyviolation', (e) => {
-  console.error('blocked', e)
-})
-
 /*
 	save event on every click. This helps grab the necessary
 	information we need to create the download link
@@ -114,7 +110,6 @@ async function downloadFile(event) {
 	const props = getDownloadProps();
 	if (!props.url) return
 
-	console.log(props)
 	const indicator = showLoading(event); // shows progress banner
 	/*
 	const [type, ext] = props.mimeType.split('/');
@@ -186,7 +181,7 @@ function getPropsFromArticle () {
 		if (parent.localName !== 'article') continue
 
 		let url, mimeType;
-		const username = parent.innerText.split('\n').shift();
+		// const username = parent.innerText.split('\n').shift();
 		// check if article contains a list of posts and
 		// get the properties from the right list item
 		if (parent.querySelector('li._acaz')) {
@@ -203,12 +198,22 @@ function getPropsFromArticle () {
 			}
 		}
 
-		const filename = createFileName(
+		const descriptionElem = parent.querySelector('._ab8x._ab94._ab99') || parent.querySelector('._a9zr')
+		// const filename = createFileName(
+		// 	'',
+		// 	mimeType,
+		// 	// username,
+		// 	descriptionElem.innerText.split('\n\n')[0].split('\n').slice(0, 10).join(' ')
+		// );
+		return {
 			url,
 			mimeType,
-			username
-		);
-		return { url, mimeType, filename };
+			filename: `${
+				descriptionElem.innerText.split('\n\n')[0].split('\n').slice(0, 10).join(' ')
+			}.${
+				mimeType.split('/').pop()
+			}`
+		};
 	}
 }
 

@@ -32,9 +32,9 @@ function createElementFromString (string) {
 }
 
 function createFileName(url, mimeType, ...others) {
-	url = url.split('=').pop().split('%').shift();
+	url = url ? url.split('=').pop().split('%').shift() : url;
 	mimeType = mimeType.split('/').pop();
-	return `${others.join('&')}-${url}.${mimeType}`;
+	return `${others.join('-')}-${url}.${mimeType}`;
 }
 
 String.prototype.toTitleCase = function () {
