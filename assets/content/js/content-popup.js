@@ -7,7 +7,7 @@ const media = {
 	'video._aa63._ac3u > source': 'video/mp4', // story video
 }
 // const divs = ['._aagt', '.KL4Bh']
-const popupMenuContainerClassName = 'hwddc3l5'
+const popupMenuContainerClassName = 'h4m39qi9'
 const popupMenuClassName = '._a9-z'
 const popupMenuButtonClassName = '_a9-- _a9_1'
 const popupMenuTriggerButtonClassName = '_abl-'
@@ -68,7 +68,7 @@ const observer = new MutationObserver(mutations => {
 	for (const mutation of mutations) {
 		// perform this check in order to avoid inserting the download button multiple times
 		const addedNode = (mutation.addedNodes || {})[0];
-		if (!addedNode?.classList) continue
+		if (!addedNode?.classList?.length) continue
 
 		if (addedNode.classList.contains(popupMenuContainerClassName)) {
 			popupMenu = addedNode.querySelector(popupMenuClassName);
