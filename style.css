@@ -5,7 +5,7 @@
 }
 
 * {
-    margin: 0;
+    margin: auto;
     padding: 0;
     box-sizing: border-box;
 }
@@ -16,16 +16,20 @@ header {
     flex-direction: column;
     align-items: center;
     padding: .3rem 0;
-    background-color: #f0f0f0;
+    background-color: #2b958c;
+    font-family: Calibri;
+    color: white;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
-header > * {
+header>* {
     margin: .3rem 0;
 }
 
 ul.steps {
     counter-reset: step-counter;
     list-style-type: none;
+    font-family: Calibri;
 }
 
 li.step::before {
@@ -40,6 +44,7 @@ li.step::before {
     margin-right: 1rem;
     font-size: 1.5rem;
     font-weight: "bold";
+    font-family: Calibri;
 }
 
 li.step {
@@ -49,19 +54,20 @@ li.step {
 }
 
 li.step:not(:last-child) {
-    padding-bottom: 0;
+    padding-bottom: 10;
 }
 
 li.step img {
     display: block;
     margin-bottom: .35rem;
     border-radius: 5px;
-    box-shadow: 0 0 6px #c4c4c4;
+    box-shadow: 0 0 6px #948e8e;
 }
 
 li.step .counter {
     color: var(--color);
     font-size: .9rem;
+    font-family: Calibri;
 }
 
 footer {
@@ -70,15 +76,18 @@ footer {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background-color: #171b1a;
     border-top: 1px solid #ebebeb;
+    font-family: Calibri;
 }
 
-footer > *:not(:last-child) {
+footer>*:not(:last-child) {
     margin-bottom: .2rem;
 }
 
 footer a {
     text-decoration: none;
+    color: rgb(7, 147, 202);
 }
 
 footer a:hover {
@@ -89,11 +98,12 @@ footer .support {
     display: flex;
 }
 
-footer .support > * {
+footer .support>* {
     margin: 0 .35rem;
 }
 
 footer .version {
     text-align: center;
+    color: white;
     /*margin: .35rem;*/
 }
