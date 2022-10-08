@@ -1,13 +1,13 @@
 // instagram element class names
 const trgts = ['wpO6b ', '_8-yf5 ']
 const media = {
-	'img._aagt': 'image/jpg', // post image
+	'img.x5yr21d': 'image/jpg', // post image
 	'video._ab1d': 'video/mp4', // post video
 	'img._aa63._ac51': 'image/jpg', // story image
 	'video._aa63._ac3u > source': 'video/mp4', // story video
 }
 // const divs = ['._aagt', '.KL4Bh']
-const popupMenuContainerClassName = 'h4m39qi9'
+const popupMenuContainerClassName = 'x1uhb9sk'
 const popupMenuClassName = '._a9-z'
 const popupMenuButtonClassName = '_a9-- _a9_1'
 const popupMenuTriggerButtonClassName = '_abl-'
@@ -57,6 +57,8 @@ document.addEventListener('popupmenu', () => {
 	observer.disconnect();
 	if (!buttonInserted) {
 		insertDownloadButton(popupMenu);
+		buttonInserted = true;
+		enableObserver() // resume monitoring
 	}
 })
 
@@ -87,8 +89,11 @@ const observer = new MutationObserver(mutations => {
 	}
 });
 
-observer.observe(document.body, observerOptions);
+enableObserver()
 
+function enableObserver() {
+	observer.observe(document.body, observerOptions);
+}
 
 function insertDownloadButton(menu) {
 	const downloadBtn = createElementFromString(`
@@ -98,8 +103,6 @@ function insertDownloadButton(menu) {
 	`);
 	downloadBtn.onclick = event => downloadFile(event);
 	menu.insertBefore(downloadBtn, menu.lastElementChild) // add button to popup menu
-	buttonInserted = true;
-	observer.observe(document.body, observerOptions); // resume monitoring
 }
 
 
@@ -133,11 +136,11 @@ async function downloadFile(event) {
 		const downloadLink = document.createElement('a');
 		downloadLink.setAttribute('download', props.filename);
 		downloadLink.setAttribute('href', webkitURL.createObjectURL(blob));
-		console.log({blob, downloadLink})
+		// console.log({blob, downloadLink})
 		downloadLink.click();
 	})
 	.catch(err => {
-		console.error(err);
+		// console.error(err);
 		alert('Sorry! An unexpected error occured. This is probably a problem with Instagram')
 	})
 	.finally(() => clearLoading(indicator, event))
@@ -177,15 +180,15 @@ function getPropsFromStory () {
 
 function getPropsFromArticle () {
 	// let article
-	for (let parent of postPath) {
-		if (parent.localName !== 'article') continue
+	for (let article of postPath) {
+		if (article.localName !== 'article') continue
 
-		let url, mimeType;
-		// const username = parent.innerText.split('\n').shift();
+		let url, mimeType, parent;
+
 		// check if article contains a list of posts and
-		// get the properties from the right list item
-		if (parent.querySelector('li._acaz')) {
-			parent = getParentFromSlides(parent);
+		// get the properties from the appropriate list item
+		if (article.querySelector('li._acaz')) {
+			parent = getParentFromSlides(article);
 		}
 
 		for (const selector of Object.keys(media)) {
@@ -198,18 +201,16 @@ function getPropsFromArticle () {
 			}
 		}
 
-		const descriptionElem = parent.querySelector('._ab8x._ab94._ab99') || parent.querySelector('._a9zr')
-		// const filename = createFileName(
-		// 	'',
-		// 	mimeType,
-		// 	// username,
-		// 	descriptionElem.innerText.split('\n\n')[0].split('\n').slice(0, 10).join(' ')
-		// );
+		const usernameEl = article.querySelector('._a9zr > h2')
+		const description = usernameEl.nextElementSibling.innerText
+		const extraChars = Math.random().toString(36).slice(2)
+
+		// console.log({parent, username: usernameEl.textContent, description})
 		return {
 			url,
 			mimeType,
 			filename: `${
-				descriptionElem.innerText.split('\n\n')[0].split('\n').slice(0, 10).join(' ')
+				usernameEl.innerText + ' - ' + description.split('\n\n')[0].split('\n').slice(0, 10).join(' ') + '_' + extraChars
 			}.${
 				mimeType.split('/').pop()
 			}`
